@@ -1,0 +1,43 @@
+{
+    "name": "izaghar/xivapi-php",
+    "description": "PHP client for XIVAPI v2",
+    "keywords": ["xivapi", "ffxiv", "final-fantasy", "api-client"],
+    "homepage": "https://github.com/izaghar/xivapi-php",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "XivApi\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "XivApi\\Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "izaghar"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0"
+    },
+    "suggest": {
+        "guzzlehttp/guzzle": "A popular HTTP client that implements PSR-18",
+        "symfony/http-client": "Symfony's HTTP client with PSR-18 support (requires nyholm/psr7)",
+        "php-http/curl-client": "A lightweight cURL-based PSR-18 client"
+    },
+    "require-dev": {
+        "pestphp/pest": "^3.0",
+        "laravel/pint": "^1.0",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
