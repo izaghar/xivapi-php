@@ -4,6 +4,7 @@ A modern PHP client for [XIVAPI v2](https://v2.xivapi.com) — the Final Fantasy
 
 [![PHP 8.3+](https://img.shields.io/badge/PHP-8.3%2B-blue.svg)](https://www.php.net/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![codecov](https://codecov.io/gh/izaghar/xivapi-php/graph/badge.svg?token=SK8GCL7F9J)](https://codecov.io/gh/izaghar/xivapi-php)
 
 ---
 
