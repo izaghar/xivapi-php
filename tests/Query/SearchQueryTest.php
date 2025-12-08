@@ -226,6 +226,112 @@ describe('grouping', function () {
     });
 });
 
+describe('PrefixBuilder', function () {
+    it('supports any() for array fields with must', function () {
+        $query = SearchQuery::must()->any('BaseParam')->on('Name')->equals('Strength');
+
+        expect((string) $query)->toBe('+BaseParam[].Name="Strength"');
+    });
+
+    it('supports any() for array fields with mustNot', function () {
+        $query = SearchQuery::mustNot()->any('Items')->on('Category')->equals('Weapon');
+
+        expect((string) $query)->toBe('-Items[].Category="Weapon"');
+    });
+
+    it('supports group() with must prefix', function () {
+        $query = SearchQuery::must()->group(fn ($g) => $g
+            ->on('A')->equals(1)
+            ->on('B')->equals(2)
+        );
+
+        expect((string) $query)->toBe('+(A=1 B=2)');
+    });
+
+    it('supports group() with mustNot prefix', function () {
+        $query = SearchQuery::mustNot()->group(fn ($g) => $g
+            ->on('Name')->contains('Hi-')
+            ->on('Name')->contains('Mega')
+        );
+
+        expect((string) $query)->toBe('-(Name~"Hi-" Name~"Mega")');
+    });
+});
+
+describe('GroupBuilder chaining', function () {
+    it('supports any() inside groups', function () {
+        $query = SearchQuery::group(fn ($g) => $g
+            ->any('BaseParam')->on('Name')->equals('Strength')
+            ->on('Level')->greaterThan(50)
+        );
+
+        expect((string) $query)->toBe('(BaseParam[].Name="Strength" Level>50)');
+    });
+
+    it('supports andOn() inside groups', function () {
+        $query = SearchQuery::group(fn ($g) => $g
+            ->on('A')->equals(1)
+            ->andOn('B')->equals(2)
+        );
+
+        expect((string) $query)->toBe('(A=1 B=2)');
+    });
+
+    it('supports andMust() inside groups', function () {
+        $query = SearchQuery::group(fn ($g) => $g
+            ->on('A')->equals(1)
+            ->andMust()->on('B')->equals(2)
+        );
+
+        expect((string) $query)->toBe('(A=1 +B=2)');
+    });
+
+    it('supports andMustNot() inside groups', function () {
+        $query = SearchQuery::group(fn ($g) => $g
+            ->on('Name')->contains('Potion')
+            ->andMustNot()->on('Name')->contains('Hi-')
+        );
+
+        expect((string) $query)->toBe('(Name~"Potion" -Name~"Hi-")');
+    });
+
+    it('supports andGroup() inside groups', function () {
+        $query = SearchQuery::group(fn ($g) => $g
+            ->on('A')->equals(1)
+            ->andGroup(fn ($inner) => $inner
+                ->on('B')->equals(2)
+                ->on('C')->equals(3)
+            )
+        );
+
+        expect((string) $query)->toBe('(A=1 (B=2 C=3))');
+    });
+
+    it('supports andMustGroup() inside groups', function () {
+        $query = SearchQuery::group(fn ($g) => $g
+            ->on('A')->equals(1)
+            ->andMustGroup(fn ($inner) => $inner
+                ->on('B')->equals(2)
+                ->on('C')->equals(3)
+            )
+        );
+
+        expect((string) $query)->toBe('(A=1 +(B=2 C=3))');
+    });
+
+    it('supports andMustNotGroup() inside groups', function () {
+        $query = SearchQuery::group(fn ($g) => $g
+            ->on('Name')->contains('Potion')
+            ->andMustNotGroup(fn ($inner) => $inner
+                ->on('Name')->contains('Hi-')
+                ->on('Name')->contains('Mega')
+            )
+        );
+
+        expect((string) $query)->toBe('(Name~"Potion" -(Name~"Hi-" Name~"Mega"))');
+    });
+});
+
 describe('complex queries', function () {
     it('builds mount search query', function () {
         $query = SearchQuery::must()->on('IsFlying')->equals(true)
