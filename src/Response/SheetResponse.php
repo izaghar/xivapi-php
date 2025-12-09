@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace XivApi\Response;
 
+use XivApi\Contracts\Arrayable;
+
 /**
  * Response from GET /sheet/{sheet} - rows from a sheet.
+ *
+ * @implements Arrayable<mixed>
  */
-readonly class SheetResponse
+readonly class SheetResponse implements Arrayable
 {
     /**
      * @param  Row[]  $rows  Array of rows retrieved
@@ -33,5 +37,17 @@ readonly class SheetResponse
             schema: $data['schema'],
             version: $data['version'],
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'rows' => array_map(
+                fn (Row $row) => $row->toArray(),
+                $this->rows,
+            ),
+            'schema' => $this->schema,
+            'version' => $this->version,
+        ];
     }
 }

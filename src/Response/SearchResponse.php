@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace XivApi\Response;
 
+use XivApi\Contracts\Arrayable;
+
 /**
  * Response from the search endpoint.
+ *
+ * @implements Arrayable<mixed>
  */
-readonly class SearchResponse
+readonly class SearchResponse implements Arrayable
 {
     /**
      * @param  SearchResult[]  $results  Array of search results sorted by relevance
@@ -44,5 +48,18 @@ readonly class SearchResponse
     public function hasMore(): bool
     {
         return $this->next !== null;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'results' => array_map(
+                fn (SearchResult $result) => $result->toArray(),
+                $this->results,
+            ),
+            'schema' => $this->schema,
+            'version' => $this->version,
+            'next' => $this->next,
+        ];
     }
 }

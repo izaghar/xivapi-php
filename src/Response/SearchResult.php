@@ -44,4 +44,13 @@ readonly class SearchResult extends Row
             transient: $data['transient'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'score' => $this->score,
+            'sheet' => $this->sheet,
+            ...parent::toArray(),
+        ];
+    }
 }

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace XivApi\Response;
 
+use XivApi\Contracts\Arrayable;
+
 /**
  * Represents a single game version available in the API.
+ *
+ * @implements Arrayable<string|string[]>
  */
-readonly class Version
+readonly class Version implements Arrayable
 {
     /**
      * @param  string  $key  Canonical key for this version
@@ -27,5 +31,13 @@ readonly class Version
             key: $data['key'],
             names: $data['names'],
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'key' => $this->key,
+            'names' => $this->names,
+        ];
     }
 }
