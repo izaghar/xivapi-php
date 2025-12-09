@@ -5,7 +5,7 @@
  *
  * Docs: https://v2.xivapi.com/docs/guides/search/
  *
- * sheets=Action,Item&query=Name~"rainbow"
+ * sheets=Action,Item&query=+Name~"rainbow"
  */
 
 declare(strict_types=1);
@@ -16,13 +16,13 @@ $api = require __DIR__.'/support/bootstrap.php';
 
 $client = $api->search()
     ->query(
-        SearchQuery::on('Name')->contains('rainbow')
+        SearchQuery::where('Name', '~', 'rainbow')
     )
     ->sheets(['Action', 'Item'])
     ->fields('Name')
     ->limit(10);
 
-echo "sheets=Action,Item&query=Name~\"rainbow\"\n";
+echo "sheets=Action,Item&query=+Name~\"rainbow\"\n";
 echo 'URL: '.$client->getUrl()."\n\n";
 
 $response = $client->get();

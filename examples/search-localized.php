@@ -5,7 +5,7 @@
  *
  * Docs: https://v2.xivapi.com/docs/guides/search/
  *
- * query=Name@ja="天使の筆"
+ * query=+Name@ja="天使の筆"
  */
 
 declare(strict_types=1);
@@ -17,12 +17,12 @@ $api = require __DIR__.'/support/bootstrap.php';
 
 $client = $api->search()
     ->query(
-        SearchQuery::on('Name')->lang(Language::Japanese)->equals('天使の筆')
+        SearchQuery::where('Name')->localizedTo(Language::Japanese)->equals('天使の筆')
     )
     ->sheets(['Item'])
     ->fields('Name,Name@ja');
 
-echo "query=Name@ja=\"天使の筆\"\n";
+echo "query=+Name@ja=\"天使の筆\"\n";
 echo 'URL: '.$client->getUrl()."\n\n";
 
 $response = $client->get();
