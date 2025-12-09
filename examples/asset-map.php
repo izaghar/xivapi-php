@@ -3,7 +3,7 @@
 /**
  * Example: Fetch a composed map
  *
- * Shows how to fetch map images. Maps are automatically composed from split source files.
+ * Shows how to fetch map images. Maps are automatically composed of split source files.
  *
  * URL: https://v2.xivapi.com/api/asset/map/s1d1/00
  */

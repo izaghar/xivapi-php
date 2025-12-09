@@ -5,7 +5,7 @@
  *
  * Docs: https://v2.xivapi.com/docs/guides/search/
  *
- * query=BaseParam[].Name="Spell Speed"
+ * query=+BaseParam[].Name="Spell Speed"
  */
 
 declare(strict_types=1);
@@ -16,13 +16,15 @@ $api = require __DIR__.'/support/bootstrap.php';
 
 $client = $api->search()
     ->query(
-        SearchQuery::any('BaseParam')->on('Name')->equals('Spell Speed')
+        SearchQuery::whereHas('BaseParam', fn ($q) => $q
+            ->where('Name', 'Spell Speed')
+        )
     )
     ->sheets(['Item'])
     ->fields('Name,BaseParam[].Name')
     ->limit(5);
 
-echo "query=BaseParam[].Name=\"Spell Speed\"\n";
+echo "query=+BaseParam[].Name=\"Spell Speed\"\n";
 echo 'URL: '.$client->getUrl()."\n\n";
 
 $response = $client->get();

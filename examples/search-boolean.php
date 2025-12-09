@@ -18,8 +18,8 @@ $api = require __DIR__.'/support/bootstrap.php';
 // +must: +ClassJobCategory.PCT=true +ClassJobLevel=92
 $client = $api->search()
     ->query(
-        SearchQuery::must()->on('ClassJobCategory')->on('PCT')->equals(true)
-            ->andMust()->on('ClassJobLevel')->equals(92)
+        SearchQuery::where('ClassJobCategory.PCT', true)
+            ->where('ClassJobLevel', 92)
     )
     ->sheets(['Action'])
     ->fields('Name,ClassJobLevel');
@@ -37,8 +37,8 @@ echo "\n".str_repeat('-', 60)."\n\n";
 // -mustNot: ClassJobCategory.WAR=true -ClassJobLevel<96
 $client = $api->search()
     ->query(
-        SearchQuery::on('ClassJobCategory')->on('WAR')->equals(true)
-            ->andMustNot()->on('ClassJobLevel')->lessThan(96)
+        SearchQuery::orWhere('ClassJobCategory.WAR', true)
+            ->whereNot('ClassJobLevel', '<', 96)
     )
     ->sheets(['Action'])
     ->fields('Name,ClassJobLevel');

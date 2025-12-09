@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace XivApi\Query\Builder;
 
+use Stringable;
 use XivApi\Contracts\ClauseCollector;
 use XivApi\Query\Concerns\BuildsConditions;
 
 /**
- * Builder for grouped query clauses.
+ * Fluent builder for search query expressions.
  *
- * Collects clauses and builds them into a parenthesized group.
- * The prefix (+, -, or none) determines how the group is treated,
- * while the content inside determines AND/OR behavior.
+ * @see https://v2.xivapi.com/docs#search
  */
-class GroupBuilder implements ClauseCollector
+class SearchQueryBuilder implements ClauseCollector, Stringable
 {
     use BuildsConditions;
 
     /**
-     * Add a raw clause string.
+     * Add a raw clause string (used by fluent builders).
      */
     public function addClause(string $clause): self
     {
@@ -29,9 +28,9 @@ class GroupBuilder implements ClauseCollector
     }
 
     /**
-     * Build the group into a query string.
+     * Build the query string.
      */
-    public function build(): string
+    public function __toString(): string
     {
         return implode(' ', $this->clauses);
     }
