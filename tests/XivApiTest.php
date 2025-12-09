@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use GuzzleHttp\Psr7\Response;
 use XivApi\Enums\Language;
+use XivApi\Query\Field;
 
 use function XivApi\Tests\createMockedClient;
 
@@ -163,7 +164,7 @@ describe('global localizations()', function () {
         $api->localizations(Language::German, Language::French)
             ->sheet('Item')
             ->fields([
-                \XivApi\Query\Field::make('Name')->localized(),
+                Field::make('Name')->localized(),
             ])
             ->get();
 
@@ -186,7 +187,7 @@ describe('global localizations()', function () {
             ->query('Name~"Test"')
             ->sheets(['Item'])
             ->fields([
-                \XivApi\Query\Field::make('Name')->localized(),
+                Field::make('Name')->localized(),
             ])
             ->get();
 

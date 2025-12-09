@@ -189,8 +189,9 @@ describe('search()->get()', function () {
             ])),
         ], $history);
 
-        $query = SearchQuery::must()->on('ClassJobCategory')->on('PCT')->equals(true)
-            ->andMust()->on('ClassJobLevel')->greaterOrEqual(90);
+        $query = SearchQuery::make()
+            ->where('ClassJobCategory.PCT')->equals(true)
+            ->where('ClassJobLevel')->greaterOrEqual(90);
 
         $api->search()
             ->query($query)

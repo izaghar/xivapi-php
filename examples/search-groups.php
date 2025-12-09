@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Example: Grouping clauses
+ * Example: Grouping clauses (OR logic)
  *
  * Docs: https://v2.xivapi.com/docs/guides/search/
  *
@@ -16,10 +16,10 @@ $api = require __DIR__.'/support/bootstrap.php';
 
 $client = $api->search()
     ->query(
-        SearchQuery::must()->on('ClassJobCategory')->on('PCT')->equals(true)
-            ->andMustGroup(fn ($q) => $q
-                ->on('ClassJobLevel')->equals(80)
-                ->on('ClassJobLevel')->equals(90)
+        SearchQuery::where('ClassJobCategory.PCT', true)
+            ->whereGroup(fn ($q) => $q
+                ->orWhere('ClassJobLevel', 80)
+                ->orWhere('ClassJobLevel', 90)
             )
     )
     ->sheets(['Action'])

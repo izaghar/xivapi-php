@@ -6,137 +6,46 @@ namespace XivApi\Query;
 
 use Stringable;
 use XivApi\Contracts\ClauseCollector;
-use XivApi\Query\Builder\ArrayOnBuilder;
-use XivApi\Query\Builder\GroupBuilder;
-use XivApi\Query\Builder\OnBuilder;
-use XivApi\Query\Builder\PrefixBuilder;
+use XivApi\Query\Builder\WhereBuilder;
+use XivApi\Query\Concerns\BuildsConditions;
 
 /**
  * Fluent builder for search query expressions.
  *
- * Example: SearchQuery::on('Name')->equals('Potion')
- *          SearchQuery::must()->on('Level')->greaterOrEqual(90)
+ * Example: SearchQuery::where('Name')->equals('Potion')
+ *          SearchQuery::where('Name', 'Potion')
+ *          SearchQuery::where('Level', '>=', 90)
+ *
+ * @method static self|WhereBuilder where(string $field, string|int|float|bool|null $operatorOrValue = null, string|int|float|bool|null $value = null)
+ * @method static self|WhereBuilder whereNot(string $field, string|int|float|bool|null $operatorOrValue = null, string|int|float|bool|null $value = null)
+ * @method static self|WhereBuilder orWhere(string $field, string|int|float|bool|null $operatorOrValue = null, string|int|float|bool|null $value = null)
+ * @method static self whereGroup(callable $callback)
+ * @method static self whereNotGroup(callable $callback)
+ * @method static self orWhereGroup(callable $callback)
+ * @method static self whereHas(string $array, callable $callback)
+ * @method static self whereHasNot(string $array, callable $callback)
+ * @method static self orWhereHas(string $array, callable $callback)
  *
  * @see https://v2.xivapi.com/docs#search
  */
 class SearchQuery implements ClauseCollector, Stringable
 {
-    /** @var list<string> */
-    private array $clauses = [];
+    use BuildsConditions;
 
     /**
-     * Start building a field condition.
-     *
-     * Example: SearchQuery::on('Name')->equals('Potion')
+     * Create a new SearchQuery instance.
      */
-    public static function on(string $field): OnBuilder
+    public static function make(): self
     {
-        return new OnBuilder('', $field, new self);
+        return new self;
     }
 
     /**
-     * Start building a condition on array elements.
-     *
-     * Example: SearchQuery::any('BaseParam')->on('Name')->equals('Spell Speed')
+     * Allow static calls to instance methods by forwarding to a new instance.
      */
-    public static function any(string $field): ArrayOnBuilder
+    public static function __callStatic(string $method, array $arguments): mixed
     {
-        return new ArrayOnBuilder('', $field.'[]', new self);
-    }
-
-    /**
-     * Start a must (+) condition.
-     *
-     * Example: SearchQuery::must()->on('Name')->equals('Potion')
-     */
-    public static function must(): PrefixBuilder
-    {
-        return new PrefixBuilder('+', new self);
-    }
-
-    /**
-     * Start a must not (-) condition.
-     *
-     * Example: SearchQuery::mustNot()->on('Name')->equals('Potion')
-     */
-    public static function mustNot(): PrefixBuilder
-    {
-        return new PrefixBuilder('-', new self);
-    }
-
-    /**
-     * Create a grouped condition.
-     *
-     * Example: SearchQuery::group(fn($q) => $q->on('A')->equals(1)->on('B')->equals(2))
-     */
-    public static function group(callable $callback): self
-    {
-        $query = new self;
-        $group = new GroupBuilder;
-        $callback($group);
-        $query->clauses[] = '('.$group->build().')';
-
-        return $query;
-    }
-
-    /**
-     * Continue with another field condition.
-     */
-    public function andOn(string $field): OnBuilder
-    {
-        return new OnBuilder('', $field, $this);
-    }
-
-    /**
-     * Continue with a must (+) condition.
-     */
-    public function andMust(): PrefixBuilder
-    {
-        return new PrefixBuilder('+', $this);
-    }
-
-    /**
-     * Continue with a must not (-) condition.
-     */
-    public function andMustNot(): PrefixBuilder
-    {
-        return new PrefixBuilder('-', $this);
-    }
-
-    /**
-     * Add a grouped condition.
-     */
-    public function andGroup(callable $callback): self
-    {
-        $group = new GroupBuilder;
-        $callback($group);
-        $this->clauses[] = '('.$group->build().')';
-
-        return $this;
-    }
-
-    /**
-     * Add a must group.
-     */
-    public function andMustGroup(callable $callback): self
-    {
-        $group = new GroupBuilder;
-        $callback($group);
-        $this->clauses[] = '+('.$group->build().')';
-
-        return $this;
-    }
-
-    /**
-     * Add a must not group.
-     */
-    public function andMustNotGroup(callable $callback): self
-    {
-        $group = new GroupBuilder;
-        $callback($group);
-        $this->clauses[] = '-('.$group->build().')';
-
-        return $this;
+        return self::make()->$method(...$arguments);
     }
 
     /**

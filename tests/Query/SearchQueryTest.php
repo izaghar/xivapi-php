@@ -5,351 +5,552 @@ declare(strict_types=1);
 use XivApi\Enums\Language;
 use XivApi\Query\SearchQuery;
 
-describe('SearchQuery::on()', function () {
-    it('creates equality clause', function () {
-        $query = SearchQuery::on('Name')->equals('Potion');
+describe('SearchQuery::where() - must conditions (+)', function () {
+    it('creates equality clause with + prefix', function () {
+        $query = SearchQuery::make()->where('Name')->equals('Potion');
 
-        expect((string) $query)->toBe('Name="Potion"');
+        expect((string) $query)->toBe('+Name="Potion"');
     });
 
-    it('creates contains clause', function () {
-        $query = SearchQuery::on('Name')->contains('rainbow');
+    it('creates contains clause with + prefix', function () {
+        $query = SearchQuery::make()->where('Name')->contains('rainbow');
 
-        expect((string) $query)->toBe('Name~"rainbow"');
+        expect((string) $query)->toBe('+Name~"rainbow"');
     });
 
     it('creates greater than clause', function () {
-        $query = SearchQuery::on('Level')->greaterThan(90);
+        $query = SearchQuery::make()->where('Level')->greaterThan(90);
 
-        expect((string) $query)->toBe('Level>90');
+        expect((string) $query)->toBe('+Level>90');
     });
 
     it('creates less than clause', function () {
-        $query = SearchQuery::on('Level')->lessThan(50);
+        $query = SearchQuery::make()->where('Level')->lessThan(50);
 
-        expect((string) $query)->toBe('Level<50');
+        expect((string) $query)->toBe('+Level<50');
     });
 
     it('creates greater or equal clause', function () {
-        $query = SearchQuery::on('Level')->greaterOrEqual(90);
-
-        expect((string) $query)->toBe('Level>=90');
-    });
-
-    it('creates less or equal clause', function () {
-        $query = SearchQuery::on('Level')->lessOrEqual(10);
-
-        expect((string) $query)->toBe('Level<=10');
-    });
-
-    it('handles boolean true', function () {
-        $query = SearchQuery::on('IsFlying')->equals(true);
-
-        expect((string) $query)->toBe('IsFlying=true');
-    });
-
-    it('handles boolean false', function () {
-        $query = SearchQuery::on('IsFlying')->equals(false);
-
-        expect((string) $query)->toBe('IsFlying=false');
-    });
-
-    it('handles float values', function () {
-        $query = SearchQuery::on('Value')->greaterThan(1.5);
-
-        expect((string) $query)->toBe('Value>1.5');
-    });
-});
-
-describe('nested fields with on()', function () {
-    it('accesses nested field', function () {
-        $query = SearchQuery::on('ClassJobCategory')->on('PCT')->equals(true);
-
-        expect((string) $query)->toBe('ClassJobCategory.PCT=true');
-    });
-
-    it('chains multiple on calls', function () {
-        $query = SearchQuery::on('A')->on('B')->on('C')->equals('value');
-
-        expect((string) $query)->toBe('A.B.C="value"');
-    });
-});
-
-describe('array fields with any()', function () {
-    it('accesses array elements', function () {
-        $query = SearchQuery::any('BaseParam')->on('Name')->equals('Spell Speed');
-
-        expect((string) $query)->toBe('BaseParam[].Name="Spell Speed"');
-    });
-
-    it('combines array with nested field', function () {
-        $query = SearchQuery::any('Items')->on('Category')->on('Name')->contains('Weapon');
-
-        expect((string) $query)->toBe('Items[].Category.Name~"Weapon"');
-    });
-});
-
-describe('language filter with lang()', function () {
-    it('adds language decorator', function () {
-        $query = SearchQuery::on('Name')->lang(Language::Japanese)->equals('ポーション');
-
-        expect((string) $query)->toBe('Name@ja="ポーション"');
-    });
-
-    it('works with nested fields', function () {
-        $query = SearchQuery::on('Item')->on('Name')->lang(Language::German)->contains('Trank');
-
-        expect((string) $query)->toBe('Item.Name@de~"Trank"');
-    });
-
-    it('prevents further path modifications after lang', function () {
-        // After lang() only terminators are available (equals, contains, etc.)
-        // This is enforced by the type system - TerminalOnBuilder has no dot() or any()
-        $query = SearchQuery::on('Name')->lang(Language::French)->equals('Potion');
-
-        expect((string) $query)->toBe('Name@fr="Potion"');
-    });
-});
-
-describe('SearchQuery::must()', function () {
-    it('adds + prefix', function () {
-        $query = SearchQuery::must()->on('Level')->greaterOrEqual(90);
+        $query = SearchQuery::make()->where('Level')->greaterOrEqual(90);
 
         expect((string) $query)->toBe('+Level>=90');
     });
 
-    it('works with nested fields', function () {
-        $query = SearchQuery::must()->on('ClassJobCategory')->on('PCT')->equals(true);
+    it('creates less or equal clause', function () {
+        $query = SearchQuery::make()->where('Level')->lessOrEqual(10);
 
-        expect((string) $query)->toBe('+ClassJobCategory.PCT=true');
+        expect((string) $query)->toBe('+Level<=10');
+    });
+
+    it('handles boolean true', function () {
+        $query = SearchQuery::make()->where('IsFlying')->equals(true);
+
+        expect((string) $query)->toBe('+IsFlying=true');
+    });
+
+    it('handles boolean false', function () {
+        $query = SearchQuery::make()->where('IsFlying')->equals(false);
+
+        expect((string) $query)->toBe('+IsFlying=false');
+    });
+
+    it('handles float values', function () {
+        $query = SearchQuery::make()->where('Value')->greaterThan(1.5);
+
+        expect((string) $query)->toBe('+Value>1.5');
     });
 });
 
-describe('SearchQuery::mustNot()', function () {
+describe('SearchQuery::whereNot() - must not conditions (-)', function () {
     it('adds - prefix', function () {
-        $query = SearchQuery::mustNot()->on('Level')->lessThan(50);
+        $query = SearchQuery::make()->whereNot('Level')->lessThan(50);
 
         expect((string) $query)->toBe('-Level<50');
     });
 });
 
+describe('SearchQuery::orWhere() - optional conditions (no prefix)', function () {
+    it('creates clause without prefix', function () {
+        $query = SearchQuery::make()->orWhere('Name')->contains('Dragon');
+
+        expect((string) $query)->toBe('Name~"Dragon"');
+    });
+});
+
+describe('nested fields with dot notation', function () {
+    it('accesses nested field', function () {
+        $query = SearchQuery::make()->where('ClassJobCategory.PCT')->equals(true);
+
+        expect((string) $query)->toBe('+ClassJobCategory.PCT=true');
+    });
+
+    it('chains multiple dots', function () {
+        $query = SearchQuery::make()->where('A.B.C')->equals('value');
+
+        expect((string) $query)->toBe('+A.B.C="value"');
+    });
+});
+
+describe('array fields with whereHas()', function () {
+    it('accesses array elements with + prefix', function () {
+        $query = SearchQuery::make()->whereHas('BaseParam', fn ($q) => $q
+            ->where('Name')->equals('Spell Speed')
+        );
+
+        expect((string) $query)->toBe('+BaseParam[].Name="Spell Speed"');
+    });
+
+    it('combines array with nested field', function () {
+        $query = SearchQuery::make()->whereHas('Items', fn ($q) => $q
+            ->where('Category.Name')->contains('Weapon')
+        );
+
+        expect((string) $query)->toBe('+Items[].Category.Name~"Weapon"');
+    });
+
+    it('supports multiple conditions in array', function () {
+        $query = SearchQuery::make()->whereHas('Items', fn ($q) => $q
+            ->where('Category')->equals('Weapon')
+            ->where('Level')->greaterThan(50)
+        );
+
+        expect((string) $query)->toBe('+Items[].Category="Weapon" +Items[].Level>50');
+    });
+});
+
+describe('language filter with localizedTo()', function () {
+    it('adds language decorator', function () {
+        $query = SearchQuery::make()->where('Name')->localizedTo(Language::Japanese)->equals('ポーション');
+
+        expect((string) $query)->toBe('+Name@ja="ポーション"');
+    });
+
+    it('works with nested fields', function () {
+        $query = SearchQuery::make()->where('Item.Name')->localizedTo(Language::German)->contains('Trank');
+
+        expect((string) $query)->toBe('+Item.Name@de~"Trank"');
+    });
+
+    it('works with contains', function () {
+        $query = SearchQuery::make()->where('Name')->localizedTo(Language::French)->contains('Potion');
+
+        expect((string) $query)->toBe('+Name@fr~"Potion"');
+    });
+});
+
 describe('chaining clauses', function () {
-    it('chains with andOn()', function () {
-        $query = SearchQuery::on('Name')->contains('Potion')
-            ->andOn('Level')->greaterOrEqual(90);
+    it('chains multiple where conditions', function () {
+        $query = SearchQuery::make()
+            ->where('Name')->contains('Potion')
+            ->where('Level')->greaterOrEqual(90);
 
-        expect((string) $query)->toBe('Name~"Potion" Level>=90');
+        expect((string) $query)->toBe('+Name~"Potion" +Level>=90');
     });
 
-    it('chains with andMust()', function () {
-        $query = SearchQuery::on('Name')->contains('Potion')
-            ->andMust()->on('Level')->greaterOrEqual(90);
-
-        expect((string) $query)->toBe('Name~"Potion" +Level>=90');
-    });
-
-    it('chains with andMustNot()', function () {
-        $query = SearchQuery::must()->on('IsFlying')->equals(true)
-            ->andMustNot()->on('ExtraSeats')->equals(0);
+    it('chains where with whereNot', function () {
+        $query = SearchQuery::make()
+            ->where('IsFlying')->equals(true)
+            ->whereNot('ExtraSeats')->equals(0);
 
         expect((string) $query)->toBe('+IsFlying=true -ExtraSeats=0');
     });
 
+    it('chains where with orWhere', function () {
+        $query = SearchQuery::make()
+            ->where('IsFlying')->equals(true)
+            ->orWhere('Name')->contains('Dragon');
+
+        expect((string) $query)->toBe('+IsFlying=true Name~"Dragon"');
+    });
+
     it('chains multiple conditions', function () {
-        $query = SearchQuery::must()->on('IsFlying')->equals(true)
-            ->andMust()->on('ExtraSeats')->greaterThan(0)
-            ->andOn('Name')->contains('Dragon');
+        $query = SearchQuery::make()
+            ->where('IsFlying')->equals(true)
+            ->where('ExtraSeats')->greaterThan(0)
+            ->orWhere('Name')->contains('Dragon');
 
         expect((string) $query)->toBe('+IsFlying=true +ExtraSeats>0 Name~"Dragon"');
     });
 });
 
-describe('grouping', function () {
-    it('creates simple group', function () {
-        $query = SearchQuery::group(fn ($q) => $q
-            ->on('Level')->equals(80)
-            ->on('Level')->equals(90)
+describe('grouping with whereGroup() - must groups (+)', function () {
+    it('creates must group with + prefix', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($q) => $q
+            ->where('Level')->equals(80)
+            ->where('Level')->equals(90)
         );
 
-        expect((string) $query)->toBe('(Level=80 Level=90)');
+        expect((string) $query)->toBe('+(+Level=80 +Level=90)');
     });
 
-    it('creates group with must inside', function () {
-        $query = SearchQuery::group(fn ($q) => $q
-            ->must()->on('A')->equals(1)
-            ->mustNot()->on('B')->equals(2)
+    it('creates group with mixed prefixes inside', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($q) => $q
+            ->where('A')->equals(1)
+            ->whereNot('B')->equals(2)
         );
 
-        expect((string) $query)->toBe('(+A=1 -B=2)');
+        expect((string) $query)->toBe('+(+A=1 -B=2)');
     });
 
-    it('chains group with andGroup', function () {
-        $query = SearchQuery::on('Name')->contains('Potion')
-            ->andGroup(fn ($q) => $q
-                ->on('Level')->equals(80)
-                ->on('Level')->equals(90)
+    it('chains group after condition', function () {
+        $query = SearchQuery::make()
+            ->where('Name')->contains('Potion')
+            ->whereGroup(fn ($q) => $q
+                ->where('Level')->equals(80)
+                ->where('Level')->equals(90)
             );
 
-        expect((string) $query)->toBe('Name~"Potion" (Level=80 Level=90)');
+        expect((string) $query)->toBe('+Name~"Potion" +(+Level=80 +Level=90)');
     });
 
-    it('chains group with andMustGroup', function () {
-        $query = SearchQuery::must()->on('ClassJobCategory')->on('PCT')->equals(true)
-            ->andMustGroup(fn ($q) => $q
-                ->on('Level')->equals(80)
-                ->on('Level')->equals(90)
+    it('chains whereNotGroup after condition', function () {
+        $query = SearchQuery::make()
+            ->where('Name')->contains('Potion')
+            ->whereNotGroup(fn ($q) => $q
+                ->where('Name')->contains('Hi-')
+                ->where('Name')->contains('Mega')
             );
 
-        expect((string) $query)->toBe('+ClassJobCategory.PCT=true +(Level=80 Level=90)');
-    });
-
-    it('chains group with andMustNotGroup', function () {
-        $query = SearchQuery::on('Name')->contains('Potion')
-            ->andMustNotGroup(fn ($q) => $q
-                ->on('Name')->contains('Hi-')
-                ->on('Name')->contains('Mega')
-            );
-
-        expect((string) $query)->toBe('Name~"Potion" -(Name~"Hi-" Name~"Mega")');
+        expect((string) $query)->toBe('+Name~"Potion" -(+Name~"Hi-" +Name~"Mega")');
     });
 
     it('creates nested groups', function () {
-        $query = SearchQuery::group(fn ($q) => $q
-            ->on('A')->equals(1)
-            ->group(fn ($inner) => $inner
-                ->on('B')->equals(2)
-                ->on('C')->equals(3)
+        $query = SearchQuery::make()->whereGroup(fn ($q) => $q
+            ->where('A')->equals(1)
+            ->whereGroup(fn ($inner) => $inner
+                ->where('B')->equals(2)
+                ->where('C')->equals(3)
             )
         );
 
-        expect((string) $query)->toBe('(A=1 (B=2 C=3))');
+        expect((string) $query)->toBe('+(+A=1 +(+B=2 +C=3))');
     });
 });
 
-describe('PrefixBuilder', function () {
-    it('supports any() for array fields with must', function () {
-        $query = SearchQuery::must()->any('BaseParam')->on('Name')->equals('Strength');
+describe('grouping with whereNotGroup() - must not groups (-)', function () {
+    it('creates must not group with - prefix', function () {
+        $query = SearchQuery::make()->whereNotGroup(fn ($q) => $q
+            ->where('Name')->contains('Hi-')
+            ->where('Name')->contains('Mega')
+        );
+
+        expect((string) $query)->toBe('-(+Name~"Hi-" +Name~"Mega")');
+    });
+});
+
+describe('grouping with orWhereGroup() - optional groups (no prefix)', function () {
+    it('creates optional group without prefix', function () {
+        $query = SearchQuery::make()->orWhereGroup(fn ($q) => $q
+            ->where('Level')->equals(80)
+            ->where('Level')->equals(90)
+        );
+
+        expect((string) $query)->toBe('(+Level=80 +Level=90)');
+    });
+});
+
+describe('whereHas variants', function () {
+    it('whereHas uses + prefix', function () {
+        $query = SearchQuery::make()->whereHas('BaseParam', fn ($q) => $q
+            ->where('Name')->equals('Strength')
+        );
 
         expect((string) $query)->toBe('+BaseParam[].Name="Strength"');
     });
 
-    it('supports any() for array fields with mustNot', function () {
-        $query = SearchQuery::mustNot()->any('Items')->on('Category')->equals('Weapon');
+    it('whereHasNot uses - prefix', function () {
+        $query = SearchQuery::make()->whereHasNot('Items', fn ($q) => $q
+            ->where('Category')->equals('Weapon')
+        );
 
         expect((string) $query)->toBe('-Items[].Category="Weapon"');
     });
 
-    it('supports group() with must prefix', function () {
-        $query = SearchQuery::must()->group(fn ($g) => $g
-            ->on('A')->equals(1)
-            ->on('B')->equals(2)
+    it('orWhereHas uses no prefix', function () {
+        $query = SearchQuery::make()->orWhereHas('BaseParam', fn ($q) => $q
+            ->where('Name')->equals('Strength')
         );
 
-        expect((string) $query)->toBe('+(A=1 B=2)');
+        expect((string) $query)->toBe('BaseParam[].Name="Strength"');
     });
 
-    it('supports group() with mustNot prefix', function () {
-        $query = SearchQuery::mustNot()->group(fn ($g) => $g
-            ->on('Name')->contains('Hi-')
-            ->on('Name')->contains('Mega')
-        );
+    it('supports chained whereHas', function () {
+        $query = SearchQuery::make()
+            ->where('Name')->contains('Sword')
+            ->whereHas('BaseParam', fn ($q) => $q
+                ->where('Name')->equals('Strength')
+            );
 
-        expect((string) $query)->toBe('-(Name~"Hi-" Name~"Mega")');
+        expect((string) $query)->toBe('+Name~"Sword" +BaseParam[].Name="Strength"');
     });
 });
 
+describe('static group entry points', function () {
+    it('whereGroup creates must group (+)', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($g) => $g
+            ->where('A')->equals(1)
+            ->where('B')->equals(2)
+        );
+
+        expect((string) $query)->toBe('+(+A=1 +B=2)');
+    });
+
+    it('whereNotGroup creates must not group (-)', function () {
+        $query = SearchQuery::make()->whereNotGroup(fn ($g) => $g
+            ->where('Name')->contains('Hi-')
+            ->where('Name')->contains('Mega')
+        );
+
+        expect((string) $query)->toBe('-(+Name~"Hi-" +Name~"Mega")');
+    });
+
+    it('orWhereGroup creates optional group (no prefix)', function () {
+        $query = SearchQuery::make()->orWhereGroup(fn ($g) => $g
+            ->where('A')->equals(1)
+            ->where('B')->equals(2)
+        );
+
+        expect((string) $query)->toBe('(+A=1 +B=2)');
+    });
+
+});
+
 describe('GroupBuilder chaining', function () {
-    it('supports any() inside groups', function () {
-        $query = SearchQuery::group(fn ($g) => $g
-            ->any('BaseParam')->on('Name')->equals('Strength')
-            ->on('Level')->greaterThan(50)
+    it('supports whereHas inside groups', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($g) => $g
+            ->whereHas('BaseParam', fn ($q) => $q
+                ->where('Name')->equals('Strength')
+            )
+            ->where('Level')->greaterThan(50)
         );
 
-        expect((string) $query)->toBe('(BaseParam[].Name="Strength" Level>50)');
+        expect((string) $query)->toBe('+(+BaseParam[].Name="Strength" +Level>50)');
     });
 
-    it('supports andOn() inside groups', function () {
-        $query = SearchQuery::group(fn ($g) => $g
-            ->on('A')->equals(1)
-            ->andOn('B')->equals(2)
+    it('supports whereNot inside groups', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($g) => $g
+            ->where('Name')->contains('Potion')
+            ->whereNot('Name')->contains('Hi-')
         );
 
-        expect((string) $query)->toBe('(A=1 B=2)');
+        expect((string) $query)->toBe('+(+Name~"Potion" -Name~"Hi-")');
     });
 
-    it('supports andMust() inside groups', function () {
-        $query = SearchQuery::group(fn ($g) => $g
-            ->on('A')->equals(1)
-            ->andMust()->on('B')->equals(2)
+    it('supports orWhere inside groups', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($g) => $g
+            ->where('A')->equals(1)
+            ->orWhere('B')->equals(2)
         );
 
-        expect((string) $query)->toBe('(A=1 +B=2)');
+        expect((string) $query)->toBe('+(+A=1 B=2)');
     });
 
-    it('supports andMustNot() inside groups', function () {
-        $query = SearchQuery::group(fn ($g) => $g
-            ->on('Name')->contains('Potion')
-            ->andMustNot()->on('Name')->contains('Hi-')
-        );
-
-        expect((string) $query)->toBe('(Name~"Potion" -Name~"Hi-")');
-    });
-
-    it('supports andGroup() inside groups', function () {
-        $query = SearchQuery::group(fn ($g) => $g
-            ->on('A')->equals(1)
-            ->andGroup(fn ($inner) => $inner
-                ->on('B')->equals(2)
-                ->on('C')->equals(3)
+    it('supports whereGroup inside groups', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($g) => $g
+            ->where('A')->equals(1)
+            ->whereGroup(fn ($inner) => $inner
+                ->where('B')->equals(2)
+                ->where('C')->equals(3)
             )
         );
 
-        expect((string) $query)->toBe('(A=1 (B=2 C=3))');
+        expect((string) $query)->toBe('+(+A=1 +(+B=2 +C=3))');
     });
 
-    it('supports andMustGroup() inside groups', function () {
-        $query = SearchQuery::group(fn ($g) => $g
-            ->on('A')->equals(1)
-            ->andMustGroup(fn ($inner) => $inner
-                ->on('B')->equals(2)
-                ->on('C')->equals(3)
+    it('supports whereNotGroup inside groups', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($g) => $g
+            ->where('Name')->contains('Potion')
+            ->whereNotGroup(fn ($inner) => $inner
+                ->where('Name')->contains('Hi-')
+                ->where('Name')->contains('Mega')
             )
         );
 
-        expect((string) $query)->toBe('(A=1 +(B=2 C=3))');
+        expect((string) $query)->toBe('+(+Name~"Potion" -(+Name~"Hi-" +Name~"Mega"))');
     });
 
-    it('supports andMustNotGroup() inside groups', function () {
-        $query = SearchQuery::group(fn ($g) => $g
-            ->on('Name')->contains('Potion')
-            ->andMustNotGroup(fn ($inner) => $inner
-                ->on('Name')->contains('Hi-')
-                ->on('Name')->contains('Mega')
+    it('supports orWhereGroup inside groups', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($g) => $g
+            ->where('A')->equals(1)
+            ->orWhereGroup(fn ($inner) => $inner
+                ->where('B')->equals(2)
+                ->where('C')->equals(3)
             )
         );
 
-        expect((string) $query)->toBe('(Name~"Potion" -(Name~"Hi-" Name~"Mega"))');
+        expect((string) $query)->toBe('+(+A=1 (+B=2 +C=3))');
+    });
+
+});
+
+describe('shortcuts', function () {
+    it('where with value shortcut for equals', function () {
+        $query = SearchQuery::make()->where('Name', 'Potion');
+
+        expect((string) $query)->toBe('+Name="Potion"');
+    });
+
+    it('where with operator and value shortcut', function () {
+        $query = SearchQuery::make()->where('Level', '>=', 90);
+
+        expect((string) $query)->toBe('+Level>=90');
+    });
+
+    it('whereNot with value shortcut', function () {
+        $query = SearchQuery::make()->whereNot('Category', 'Weapon');
+
+        expect((string) $query)->toBe('-Category="Weapon"');
+    });
+
+    it('orWhere with contains shortcut', function () {
+        $query = SearchQuery::make()->orWhere('Name', '~', 'Dragon');
+
+        expect((string) $query)->toBe('Name~"Dragon"');
+    });
+
+    it('shortcuts work in groups', function () {
+        $query = SearchQuery::make()->whereGroup(fn ($g) => $g
+            ->where('A', 1)
+            ->whereNot('B', '>', 10)
+        );
+
+        expect((string) $query)->toBe('+(+A=1 -B>10)');
+    });
+
+    it('all operators work', function () {
+        $query = SearchQuery::make()
+            ->where('A', '=', 'value')
+            ->where('B', '~', 'text')
+            ->where('C', '>', 10)
+            ->where('D', '<', 20)
+            ->where('E', '>=', 30)
+            ->where('F', '<=', 40);
+
+        expect((string) $query)->toBe('+A="value" +B~"text" +C>10 +D<20 +E>=30 +F<=40');
     });
 });
 
 describe('complex queries', function () {
     it('builds mount search query', function () {
-        $query = SearchQuery::must()->on('IsFlying')->equals(true)
-            ->andMust()->on('ExtraSeats')->greaterThan(0)
-            ->andOn('Name')->contains('Dragon');
+        $query = SearchQuery::make()
+            ->where('IsFlying')->equals(true)
+            ->where('ExtraSeats')->greaterThan(0)
+            ->orWhere('Name')->contains('Dragon');
 
         expect((string) $query)->toBe('+IsFlying=true +ExtraSeats>0 Name~"Dragon"');
     });
 
     it('builds item search with array field', function () {
-        $query = SearchQuery::any('BaseParam')->on('Name')->equals('Spell Speed');
+        $query = SearchQuery::make()->whereHas('BaseParam', fn ($q) => $q
+            ->where('Name')->equals('Spell Speed')
+        );
 
-        expect((string) $query)->toBe('BaseParam[].Name="Spell Speed"');
+        expect((string) $query)->toBe('+BaseParam[].Name="Spell Speed"');
     });
 
     it('builds localized search', function () {
-        $query = SearchQuery::on('Name')->lang(Language::Japanese)->contains('ポーション');
+        $query = SearchQuery::make()->where('Name')->localizedTo(Language::Japanese)->contains('ポーション');
 
-        expect((string) $query)->toBe('Name@ja~"ポーション"');
+        expect((string) $query)->toBe('+Name@ja~"ポーション"');
+    });
+
+    it('builds complex query with groups and arrays', function () {
+        $query = SearchQuery::make()
+            ->where('IsFlying')->equals(true)
+            ->where('ExtraSeats')->greaterThan(0)
+            ->orWhere('Name')->localizedTo(Language::Japanese)->contains('ドラゴン')
+            ->whereGroup(fn ($q) => $q
+                ->where('Level')->equals(80)
+                ->where('Level')->equals(90)
+            );
+
+        expect((string) $query)->toBe('+IsFlying=true +ExtraSeats>0 Name@ja~"ドラゴン" +(+Level=80 +Level=90)');
+    });
+
+});
+
+describe('error handling', function () {
+    it('throws on unknown operator', function () {
+        SearchQuery::make()->where('Field', '!=', 'value');
+    })->throws(InvalidArgumentException::class, 'Unknown operator: !=');
+});
+
+describe('ArrayGroupBuilder variants', function () {
+    it('whereHas with whereNot inside', function () {
+        $query = SearchQuery::make()->whereHas('Items', fn ($q) => $q
+            ->whereNot('Category')->equals('Weapon')
+        );
+
+        expect((string) $query)->toBe('-Items[].Category="Weapon"');
+    });
+
+    it('whereHas with orWhere inside', function () {
+        $query = SearchQuery::make()->whereHas('Items', fn ($q) => $q
+            ->orWhere('Name')->contains('Rare')
+        );
+
+        expect((string) $query)->toBe('Items[].Name~"Rare"');
+    });
+
+    it('whereHasNot with whereNot inside uses - prefix', function () {
+        $query = SearchQuery::make()->whereHasNot('Items', fn ($q) => $q
+            ->whereNot('Category')->equals('Weapon')
+        );
+
+        expect((string) $query)->toBe('-Items[].Category="Weapon"');
+    });
+
+    it('orWhereHas with multiple conditions', function () {
+        $query = SearchQuery::make()->orWhereHas('Stats', fn ($q) => $q
+            ->where('Name')->equals('Strength')
+            ->whereNot('Value')->lessThan(10)
+        );
+
+        expect((string) $query)->toBe('Stats[].Name="Strength" -Stats[].Value<10');
+    });
+});
+
+describe('orWhere for OR logic', function () {
+    it('orWhere inside whereGroup for OR logic', function () {
+        $query = SearchQuery::make()
+            ->where('Level')->greaterOrEqual(1)
+            ->whereGroup(fn ($g) => $g
+                ->orWhere('Name')->contains('Potion')
+                ->orWhere('Name')->contains('Ether')
+            );
+
+        expect((string) $query)->toBe('+Level>=1 +(Name~"Potion" Name~"Ether")');
+    });
+});
+
+describe('LocalizedWhereBuilder terminators', function () {
+    it('supports greaterThan on localized field', function () {
+        $query = SearchQuery::make()->where('Value')->localizedTo(Language::Japanese)->greaterThan(100);
+
+        expect((string) $query)->toBe('+Value@ja>100');
+    });
+
+    it('supports lessThan on localized field', function () {
+        $query = SearchQuery::make()->where('Value')->localizedTo(Language::German)->lessThan(50);
+
+        expect((string) $query)->toBe('+Value@de<50');
+    });
+
+    it('supports greaterOrEqual on localized field', function () {
+        $query = SearchQuery::make()->where('Level')->localizedTo(Language::French)->greaterOrEqual(90);
+
+        expect((string) $query)->toBe('+Level@fr>=90');
+    });
+
+    it('supports lessOrEqual on localized field', function () {
+        $query = SearchQuery::make()->where('Level')->localizedTo(Language::English)->lessOrEqual(10);
+
+        expect((string) $query)->toBe('+Level@en<=10');
+    });
+
+    it('supports equals with boolean on localized field', function () {
+        $query = SearchQuery::make()->where('IsActive')->localizedTo(Language::Japanese)->equals(true);
+
+        expect((string) $query)->toBe('+IsActive@ja=true');
     });
 });

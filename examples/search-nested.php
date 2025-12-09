@@ -16,7 +16,7 @@ $api = require __DIR__.'/support/bootstrap.php';
 
 $client = $api->search()
     ->query(
-        SearchQuery::on('ClassJob')->on('Abbreviation')->equals('PCT')
+        SearchQuery::where('ClassJob.Abbreviation', 'PCT')
     )
     ->sheets(['Action'])
     ->fields('Name,ClassJob.Abbreviation')

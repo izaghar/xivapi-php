@@ -516,21 +516,18 @@ Build search queries programmatically instead of writing raw query strings:
 use XivApi\Query\SearchQuery;
 use XivApi\Enums\Language;
 
-// Simple equality
-$query = SearchQuery::on('LevelItem')->equals(50);
+// Simple conditions
+$query = SearchQuery::where('LevelItem', 50);
+$query = SearchQuery::where('Name')->contains('Potion');
 
-// String contains
-$query = SearchQuery::on('Name')->contains('Potion');
+// Shortcuts
+$query = SearchQuery::where('Name', 'Potion')       // equals
+    ->where('Level', '>=', 90);                     // greaterOrEqual
 
 // Chained conditions
-$query = SearchQuery::on('Name')->contains('Potion')
-    ->andMust()->on('LevelItem')->greaterOrEqual(10);
-
-// Search in array elements
-$query = SearchQuery::any('BaseParam')->on('Name')->equals('Strength');
-
-// With language
-$query = SearchQuery::on('Name')->lang(Language::Japanese)->contains('ポーション');
+$query = SearchQuery::where('Name')->contains('Potion')
+    ->where('LevelItem')->greaterOrEqual(10)
+    ->whereNot('Name')->contains('Hi-');
 
 // Pass to search
 $api->search()
@@ -539,7 +536,29 @@ $api->search()
     ->get();
 ```
 
-#### Available Operations
+> **Note:** You can also use `SearchQuery::make()` to create an empty instance first.
+
+#### Condition Methods
+
+| Method             | Prefix | Description    |
+|--------------------|--------|----------------|
+| `where($field)`    | `+`    | Must match     |
+| `whereNot($field)` | `-`    | Must not match |
+| `orWhere($field)`  | (none) | OR / optional  |
+
+#### Shortcuts
+
+```php
+->where('Field', $value)              // equals
+->where('Field', '=', $value)         // equals
+->where('Field', '~', $value)         // contains
+->where('Field', '>', $value)         // greaterThan
+->where('Field', '<', $value)         // lessThan
+->where('Field', '>=', $value)        // greaterOrEqual
+->where('Field', '<=', $value)        // lessOrEqual
+```
+
+#### Finisher Methods
 
 | Method                    | Query Syntax    |
 |---------------------------|-----------------|
@@ -550,30 +569,65 @@ $api->search()
 | `greaterOrEqual($value)`  | `Field>=value`  |
 | `lessOrEqual($value)`     | `Field<=value`  |
 
-#### Prefixes
-
-| Method                   | Description    | Query Syntax   |
-|--------------------------|----------------|----------------|
-| `SearchQuery::must()`    | Must match     | `+Field=value` |
-| `SearchQuery::mustNot()` | Must not match | `-Field=value` |
-
 #### Grouping
 
 ```php
-// OR within a group
-$query = SearchQuery::group(fn($g) => $g
-    ->on('Name')->contains('Potion')
-    ->on('Name')->contains('Ether')
-);
-// Builds: (Name~"Potion" Name~"Ether")
-
-// Required group
-$query = SearchQuery::on('LevelItem')->greaterOrEqual(1)
-    ->andMustGroup(fn($g) => $g
-        ->on('Name')->contains('Potion')
-        ->on('Name')->contains('Ether')
+// AND group (all conditions must match)
+$query = SearchQuery::where('LevelItem')->greaterOrEqual(1)
+    ->whereGroup(fn($g) => $g
+        ->where('Name')->contains('Potion')
+        ->where('Name')->contains('Ether')
     );
-// Builds: LevelItem>=1 +(Name~"Potion" Name~"Ether")
+// Builds: +LevelItem>=1 +(+Name~"Potion" +Name~"Ether")
+
+// OR group (at least one condition must match)
+$query = SearchQuery::where('LevelItem')->greaterOrEqual(1)
+    ->whereGroup(fn($g) => $g
+        ->orWhere('Name')->contains('Potion')
+        ->orWhere('Name')->contains('Ether')
+    );
+// Builds: +LevelItem>=1 +(Name~"Potion" Name~"Ether")
+
+// Must not group
+->whereNotGroup(fn($g) => ...)  // -(...)
+
+// OR group
+->orWhereGroup(fn($g) => ...)   // (...)
+```
+
+#### Array Fields
+
+```php
+// Search in array elements
+$query = SearchQuery::whereHas('BaseParam', fn($q) => $q
+    ->where('Name')->equals('Strength')
+);
+// Builds: +BaseParam[].Name="Strength"
+
+// Variants
+->whereHas($array, $callback)     // +Array[].Field=value
+->whereHasNot($array, $callback)  // -Array[].Field=value
+->orWhereHas($array, $callback)   // Array[].Field=value
+```
+
+#### Language Filter
+
+```php
+$query = SearchQuery::where('Name')->localizedTo(Language::Japanese)->contains('ポーション');
+// Builds: +Name@ja~"ポーション"
+```
+
+#### Complex Example
+
+```php
+$query = SearchQuery::where('IsFlying', true)
+    ->where('ExtraSeats', '>', 0)
+    ->orWhere('Name')->localizedTo(Language::Japanese)->contains('ドラゴン')
+    ->whereGroup(fn($q) => $q
+        ->orWhere('Level', 80)
+        ->orWhere('Level', 90)
+    );
+// Builds: +IsFlying=true +ExtraSeats>0 Name@ja~"ドラゴン" +(Level=80 Level=90)
 ```
 
 ---

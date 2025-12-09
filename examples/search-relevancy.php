@@ -16,8 +16,8 @@ $api = require __DIR__.'/support/bootstrap.php';
 
 $client = $api->search()
     ->query(
-        SearchQuery::on('ClassJobLevel')->equals(92)
-            ->andOn('Name')->equals('Rainbow Drip')
+        SearchQuery::orWhere('ClassJobLevel', 92)
+            ->orWhere('Name', 'Rainbow Drip')
     )
     ->sheets(['Action'])
     ->fields('Name,ClassJobLevel')

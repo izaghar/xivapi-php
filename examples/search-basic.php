@@ -19,7 +19,7 @@ $api = require __DIR__.'/support/bootstrap.php';
 // Exact match: Name="Rainbow Drip"
 $client = $api->search()
     ->query(
-        SearchQuery::on('Name')->equals('Rainbow Drip')
+        SearchQuery::where('Name', 'Rainbow Drip')
     )
     ->sheets(['Action'])
     ->fields('Name');
@@ -37,7 +37,7 @@ echo "\n".str_repeat('-', 60)."\n\n";
 // Partial match: Name~"rainbow"
 $client = $api->search()
     ->query(
-        SearchQuery::on('Name')->contains('rainbow')
+        SearchQuery::where('Name', '~', 'rainbow')
     )
     ->sheets(['Item'])
     ->fields('Name')
@@ -56,7 +56,7 @@ echo "\n".str_repeat('-', 60)."\n\n";
 // Numeric comparison: Recast100ms>3000
 $client = $api->search()
     ->query(
-        SearchQuery::on('Recast100ms')->greaterThan(3000)
+        SearchQuery::where('Recast100ms', '>', 3000)
     )
     ->sheets(['Action'])
     ->fields('Name,Recast100ms')
