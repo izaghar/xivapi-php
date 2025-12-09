@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace XivApi\Query\Builder;
 
 use XivApi\Contracts\ClauseCollector;
+use XivApi\Query\Concerns\HandlesConditionShortcuts;
 
 /**
  * Builder for array field conditions (whereHas).
@@ -13,6 +14,8 @@ use XivApi\Contracts\ClauseCollector;
  */
 class ArrayGroupBuilder implements ClauseCollector
 {
+    use HandlesConditionShortcuts;
+
     /** @var list<string> */
     private array $clauses = [];
 
@@ -22,27 +25,27 @@ class ArrayGroupBuilder implements ClauseCollector
     ) {}
 
     /**
-     * Start building a condition using the parent's prefix.
+     * Add a must (+) condition using the parent's prefix.
      */
-    public function where(string $field): WhereBuilder
+    public function where(string $field, string|int|float|bool|null $operatorOrValue = null, string|int|float|bool|null $value = null): self|WhereBuilder
     {
-        return new WhereBuilder($this->prefix, $this->arrayPath.'.'.$field, $this);
+        return $this->buildCondition($this->prefix, $this->arrayPath.'.'.$field, $operatorOrValue, $value);
     }
 
     /**
-     * Start building a must not (-) condition (overrides parent prefix).
+     * Add a must not (-) condition (overrides parent prefix).
      */
-    public function whereNot(string $field): WhereBuilder
+    public function whereNot(string $field, string|int|float|bool|null $operatorOrValue = null, string|int|float|bool|null $value = null): self|WhereBuilder
     {
-        return new WhereBuilder('-', $this->arrayPath.'.'.$field, $this);
+        return $this->buildCondition('-', $this->arrayPath.'.'.$field, $operatorOrValue, $value);
     }
 
     /**
-     * Start building an optional condition (overrides parent prefix) - acts as OR.
+     * Add an optional condition (overrides parent prefix) - acts as OR.
      */
-    public function orWhere(string $field): WhereBuilder
+    public function orWhere(string $field, string|int|float|bool|null $operatorOrValue = null, string|int|float|bool|null $value = null): self|WhereBuilder
     {
-        return new WhereBuilder('', $this->arrayPath.'.'.$field, $this);
+        return $this->buildCondition('', $this->arrayPath.'.'.$field, $operatorOrValue, $value);
     }
 
     /**

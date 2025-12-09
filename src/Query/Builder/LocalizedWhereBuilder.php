@@ -6,7 +6,6 @@ namespace XivApi\Query\Builder;
 
 use XivApi\Contracts\ClauseCollector;
 use XivApi\Query\Concerns\TerminatesClause;
-use XivApi\Query\SearchQuery;
 
 /**
  * Builder for localized field conditions.
@@ -23,11 +22,11 @@ readonly class LocalizedWhereBuilder
         private ClauseCollector $collector,
     ) {}
 
-    private function terminate(string $operator, string|int|float|bool $value): SearchQuery|GroupBuilder|ArrayGroupBuilder
+    private function terminate(string $operator, string|int|float|bool $value): SearchQueryBuilder|GroupBuilder|ArrayGroupBuilder
     {
         $formatted = WhereBuilder::formatValue($value);
 
-        /** @var SearchQuery|GroupBuilder|ArrayGroupBuilder */
+        /** @var SearchQueryBuilder|GroupBuilder|ArrayGroupBuilder */
         return $this->collector->addClause($this->prefix.$this->path.$operator.$formatted);
     }
 }

@@ -5,6 +5,38 @@ declare(strict_types=1);
 use XivApi\Enums\Language;
 use XivApi\Query\SearchQuery;
 
+describe('SearchQuery static method forwarding', function () {
+    it('forwards where() via __callStatic', function () {
+        $query = SearchQuery::where('Name')->equals('Potion');
+
+        expect((string) $query)->toBe('+Name="Potion"');
+    });
+
+    it('forwards whereNot() via __callStatic', function () {
+        $query = SearchQuery::whereNot('Name')->equals('Potion');
+
+        expect((string) $query)->toBe('-Name="Potion"');
+    });
+
+    it('forwards orWhere() via __callStatic', function () {
+        $query = SearchQuery::orWhere('Name')->equals('Potion');
+
+        expect((string) $query)->toBe('Name="Potion"');
+    });
+
+    it('forwards whereGroup() via __callStatic', function () {
+        $query = SearchQuery::whereGroup(fn ($q) => $q->where('Name', 'Test'));
+
+        expect((string) $query)->toBe('+(+Name="Test")');
+    });
+
+    it('forwards whereHas() via __callStatic', function () {
+        $query = SearchQuery::whereHas('Items', fn ($q) => $q->where('Name', 'Test'));
+
+        expect((string) $query)->toBe('+Items[].Name="Test"');
+    });
+});
+
 describe('SearchQuery::where() - must conditions (+)', function () {
     it('creates equality clause with + prefix', function () {
         $query = SearchQuery::make()->where('Name')->equals('Potion');
@@ -508,6 +540,46 @@ describe('ArrayGroupBuilder variants', function () {
 
         expect((string) $query)->toBe('Stats[].Name="Strength" -Stats[].Value<10');
     });
+});
+
+describe('ArrayGroupBuilder shortcuts', function () {
+    it('where with value shortcut', function () {
+        $query = SearchQuery::make()->whereHas('Items', fn ($q) => $q
+            ->where('Name', 'Sword')
+        );
+
+        expect((string) $query)->toBe('+Items[].Name="Sword"');
+    });
+
+    it('where with operator shortcut', function () {
+        $query = SearchQuery::make()->whereHas('Items', fn ($q) => $q
+            ->where('Level', '>=', 50)
+        );
+
+        expect((string) $query)->toBe('+Items[].Level>=50');
+    });
+
+    it('whereNot with value shortcut', function () {
+        $query = SearchQuery::make()->whereHas('Items', fn ($q) => $q
+            ->whereNot('Category', 'Weapon')
+        );
+
+        expect((string) $query)->toBe('-Items[].Category="Weapon"');
+    });
+
+    it('orWhere with operator shortcut', function () {
+        $query = SearchQuery::make()->whereHas('Items', fn ($q) => $q
+            ->orWhere('Name', '~', 'Rare')
+        );
+
+        expect((string) $query)->toBe('Items[].Name~"Rare"');
+    });
+
+    it('throws on unknown operator in array builder', function () {
+        SearchQuery::make()->whereHas('Items', fn ($q) => $q
+            ->where('Name', '!=', 'Test')
+        );
+    })->throws(InvalidArgumentException::class, 'Unknown operator: !=');
 });
 
 describe('orWhere for OR logic', function () {

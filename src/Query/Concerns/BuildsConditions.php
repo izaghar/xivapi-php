@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace XivApi\Query\Concerns;
 
-use InvalidArgumentException;
 use XivApi\Contracts\ClauseCollector;
 use XivApi\Query\Builder\ArrayGroupBuilder;
 use XivApi\Query\Builder\GroupBuilder;
@@ -13,10 +12,12 @@ use XivApi\Query\Builder\WhereBuilder;
 /**
  * Trait for building search query conditions.
  *
- * Used by SearchQuery and GroupBuilder to avoid code duplication.
+ * Used by SearchQueryBuilder and GroupBuilder to avoid code duplication.
  */
 trait BuildsConditions
 {
+    use HandlesConditionShortcuts;
+
     /** @var list<string> */
     private array $clauses = [];
 
@@ -27,7 +28,7 @@ trait BuildsConditions
      */
     public function where(string $field, string|int|float|bool|null $operatorOrValue = null, string|int|float|bool|null $value = null): self|WhereBuilder
     {
-        return $this->condition('+', $field, $operatorOrValue, $value);
+        return $this->buildCondition('+', $field, $operatorOrValue, $value);
     }
 
     /**
@@ -35,7 +36,7 @@ trait BuildsConditions
      */
     public function whereNot(string $field, string|int|float|bool|null $operatorOrValue = null, string|int|float|bool|null $value = null): self|WhereBuilder
     {
-        return $this->condition('-', $field, $operatorOrValue, $value);
+        return $this->buildCondition('-', $field, $operatorOrValue, $value);
     }
 
     /**
@@ -46,7 +47,7 @@ trait BuildsConditions
      */
     public function orWhere(string $field, string|int|float|bool|null $operatorOrValue = null, string|int|float|bool|null $value = null): self|WhereBuilder
     {
-        return $this->condition('', $field, $operatorOrValue, $value);
+        return $this->buildCondition('', $field, $operatorOrValue, $value);
     }
 
     /**
@@ -95,42 +96,6 @@ trait BuildsConditions
     public function orWhereHas(string $array, callable $callback): self
     {
         return $this->arrayCondition('', $array, $callback);
-    }
-
-    /**
-     * Build a condition with optional operator shortcut.
-     *
-     * Supports three call signatures:
-     * - condition('+', 'Field') → returns WhereBuilder for chaining
-     * - condition('+', 'Field', 'value') → shortcut for equals
-     * - condition('+', 'Field', '>=', 90) → shortcut for operator
-     */
-    private function condition(string $prefix, string $field, string|int|float|bool|null $operatorOrValue, string|int|float|bool|null $value): self|WhereBuilder
-    {
-        $builder = new WhereBuilder($prefix, $field, $this);
-
-        // No additional args - return builder for chaining
-        if ($operatorOrValue === null) {
-            return $builder;
-        }
-
-        // Two args: where('field', value) - shortcut for equals
-        if ($value === null) {
-            return $builder->equals($operatorOrValue);
-        }
-
-        // Three args: where('field', operator, value)
-        $operator = (string) $operatorOrValue;
-
-        return match ($operator) {
-            '=' => $builder->equals($value),
-            '~' => $builder->contains((string) $value),
-            '>' => $builder->greaterThan($value),
-            '<' => $builder->lessThan($value),
-            '>=' => $builder->greaterOrEqual($value),
-            '<=' => $builder->lessOrEqual($value),
-            default => throw new InvalidArgumentException("Unknown operator: $operator"),
-        };
     }
 
     /**
