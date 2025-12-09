@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace XivApi\Response;
 
+use XivApi\Contracts\Arrayable;
+
 /**
  * Represents a single row from a sheet.
+ *
+ * @implements Arrayable<mixed>
  */
-readonly class Row
+readonly class Row implements Arrayable
 {
     /**
      * @param  int  $rowId  ID of this row
@@ -33,5 +37,15 @@ readonly class Row
             fields: $data['fields'],
             transient: $data['transient'] ?? null,
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'row_id' => $this->rowId,
+            'subrow_id' => $this->subrowId,
+            'fields' => $this->fields,
+            'transient' => $this->transient,
+        ];
     }
 }

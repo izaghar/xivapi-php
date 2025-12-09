@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace XivApi\Response;
 
+use XivApi\Contracts\Arrayable;
+
 /**
  * Response from GET /sheet/{sheet}/{row} - a single row.
+ *
+ * @implements Arrayable<mixed>
  */
-readonly class RowResponse
+readonly class RowResponse implements Arrayable
 {
     /**
      * @param  int  $rowId  ID of this row
@@ -39,5 +43,17 @@ readonly class RowResponse
             schema: $data['schema'],
             version: $data['version'],
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'row_id' => $this->rowId,
+            'subrow_id' => $this->subrowId,
+            'fields' => $this->fields,
+            'transient' => $this->transient,
+            'schema' => $this->schema,
+            'version' => $this->version,
+        ];
     }
 }

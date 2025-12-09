@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace XivApi\Response;
 
+use XivApi\Contracts\Arrayable;
+
 /**
  * Response from the /version endpoint.
+ *
+ * @implements Arrayable<array<array{key: string, names: string[]}>>
  */
-readonly class VersionsResponse
+readonly class VersionsResponse implements Arrayable
 {
     /**
      * @param  Version[]  $versions  List of available game versions
@@ -27,5 +31,15 @@ readonly class VersionsResponse
                 $data['versions'],
             ),
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'versions' => array_map(
+                fn (Version $version) => $version->toArray(),
+                $this->versions,
+            ),
+        ];
     }
 }

@@ -53,7 +53,7 @@ function binaryResponse(): Response
 }
 
 // Clients with HasFields, HasLanguage, HasSchema, HasTransient
-dataset('clientsWithFields', [
+dataset('clients with fields', [
     'SheetRowsClient' => [
         fn (&$history) => createMockedClient([sheetResponse()], $history)->sheet('Item'),
         fn ($client) => $client->get(),
@@ -69,7 +69,7 @@ dataset('clientsWithFields', [
 ]);
 
 // Clients with HasLimit (SheetRowClient does NOT have limit)
-dataset('clientsWithLimit', [
+dataset('clients with limit', [
     'SheetRowsClient' => [
         fn (&$history) => createMockedClient([sheetResponse()], $history)->sheet('Item'),
         fn ($client) => $client->get(),
@@ -81,7 +81,7 @@ dataset('clientsWithLimit', [
 ]);
 
 // Clients with HasVersion
-dataset('clientsWithVersion', [
+dataset('clients with version', [
     'SheetRowsClient' => [
         fn (&$history) => createMockedClient([sheetResponse()], $history)->sheet('Item'),
         fn ($client) => $client->get(),
@@ -116,7 +116,7 @@ describe('HasVersion', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['version'])->toBe('7.0');
-    })->with('clientsWithVersion');
+    })->with('clients with version');
 });
 
 describe('HasLimit', function () {
@@ -127,7 +127,7 @@ describe('HasLimit', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['limit'])->toBe('50');
-    })->with('clientsWithLimit');
+    })->with('clients with limit');
 });
 
 describe('HasLanguage', function () {
@@ -138,7 +138,7 @@ describe('HasLanguage', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['language'])->toBe('de');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 });
 
 describe('HasSchema', function () {
@@ -149,7 +149,7 @@ describe('HasSchema', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['schema'])->toBe('exdschema@2');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 });
 
 describe('HasFields', function () {
@@ -160,7 +160,7 @@ describe('HasFields', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['fields'])->toBe('Name,Description');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 
     it('includes fields as Field object', function ($createClient, $execute) {
         $history = [];
@@ -169,7 +169,7 @@ describe('HasFields', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['fields'])->toBe('Name@lang(de)');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 
     it('includes fields as array of Field objects', function ($createClient, $execute) {
         $history = [];
@@ -181,7 +181,7 @@ describe('HasFields', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['fields'])->toBe('Name,Description@as(html)');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 
     it('includes fields as array of strings', function ($createClient, $execute) {
         $history = [];
@@ -190,7 +190,7 @@ describe('HasFields', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['fields'])->toBe('Name,Icon');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 
     it('includes fields as mixed array', function ($createClient, $execute) {
         $history = [];
@@ -203,7 +203,7 @@ describe('HasFields', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['fields'])->toBe('Name@lang(de),Icon,Description@as(html)');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 });
 
 describe('HasTransient', function () {
@@ -214,7 +214,7 @@ describe('HasTransient', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['transient'])->toBe('Description');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 
     it('includes transient as Field object', function ($createClient, $execute) {
         $history = [];
@@ -223,7 +223,7 @@ describe('HasTransient', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['transient'])->toBe('Description@as(html)');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 
     it('includes transient as array of Field objects', function ($createClient, $execute) {
         $history = [];
@@ -235,7 +235,7 @@ describe('HasTransient', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['transient'])->toBe('Description,Help@as(html)');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 
     it('includes transient as array of strings', function ($createClient, $execute) {
         $history = [];
@@ -244,7 +244,7 @@ describe('HasTransient', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['transient'])->toBe('Description,Help');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 
     it('includes transient as mixed array', function ($createClient, $execute) {
         $history = [];
@@ -256,5 +256,5 @@ describe('HasTransient', function () {
 
         parse_str($history[0]['request']->getUri()->getQuery(), $params);
         expect($params['transient'])->toBe('Description@as(html),Help');
-    })->with('clientsWithFields');
+    })->with('clients with fields');
 });
