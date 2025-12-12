@@ -70,6 +70,26 @@ class Field implements Stringable
     }
 
     /**
+     * Apply the raw transformation to this field.
+     *
+     * Prevents processing of relationships and icons.
+     */
+    public function asRaw(): self
+    {
+        return $this->as(Transform::Raw);
+    }
+
+    /**
+     * Apply the HTML transformation to this field.
+     *
+     * Formats string values into HTML fragments.
+     */
+    public function asHtml(): self
+    {
+        return $this->as(Transform::Html);
+    }
+
+    /**
      * Build field string(s).
      *
      * @param  Language[]  $globalLanguages  Languages from XivApi config
