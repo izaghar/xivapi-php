@@ -38,6 +38,36 @@ describe('Field::as()', function () {
     });
 });
 
+describe('Field::asRaw()', function () {
+    it('adds raw transform as shortcut', function () {
+        $field = Field::make('Icon')->asRaw();
+
+        expect((string) $field)->toBe('Icon@as(raw)')
+            ->and($field->build())->toBe(['Icon@as(raw)']);
+    });
+
+    it('works with other modifiers', function () {
+        $field = Field::make('Description')->lang(Language::Japanese)->asRaw();
+
+        expect((string) $field)->toBe('Description@lang(ja)@as(raw)');
+    });
+});
+
+describe('Field::asHtml()', function () {
+    it('adds html transform as shortcut', function () {
+        $field = Field::make('Description')->asHtml();
+
+        expect((string) $field)->toBe('Description@as(html)')
+            ->and($field->build())->toBe(['Description@as(html)']);
+    });
+
+    it('works with other modifiers', function () {
+        $field = Field::make('Description')->lang(Language::German)->asHtml();
+
+        expect((string) $field)->toBe('Description@lang(de)@as(html)');
+    });
+});
+
 describe('Field::localized()', function () {
     it('expands with explicit languages', function () {
         $field = Field::make('Name')->localized(Language::German, Language::French);

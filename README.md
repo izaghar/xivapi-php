@@ -464,6 +464,8 @@ $api->sheet('Item')
 | `make(string $name)`        | Create a field               | `Name`                             |
 | `lang(Language $l)`         | Set explicit language        | `Name@lang(de)`                    |
 | `as(Transform $t)`          | Apply transformation         | `Description@as(html)`             |
+| `asRaw()`                   | Apply raw transformation     | `Icon@as(raw)`                     |
+| `asHtml()`                  | Apply HTML transformation    | `Description@as(html)`             |
 | `localized(Language ...$l)` | Expand to multiple languages | `Name,Name@lang(de),Name@lang(fr)` |
 
 #### Localized Fields
@@ -492,9 +494,13 @@ $api->sheet('Item')
 ```php
 // HTML formatting for strings with markup
 Field::make('Description')->as(Transform::Html)
+// Or using the shortcut:
+Field::make('Description')->asHtml()
 
 // Raw value (skip relation resolution)
 Field::make('ItemUICategory')->as(Transform::Raw)
+// Or using the shortcut:
+Field::make('ItemUICategory')->asRaw()
 ```
 
 #### Nested Fields
